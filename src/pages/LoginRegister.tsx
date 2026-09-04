@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore, UserRole } from '../store/authStore';
 import { useFoodStore } from '../store/foodStore';
-import { BookOpen, User, Lock, Phone, School, GraduationCap, UserCheck, UserPlus } from 'lucide-react';
+import { BookOpen, User, Lock, Phone, School, GraduationCap, UserCheck, UserPlus, Eye, EyeOff } from 'lucide-react';
 import Logo from '../components/Logo';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -35,6 +35,8 @@ const LoginRegister = () => {
   const navigate = useNavigate();
   const [mode, setMode] = React.useState<'login' | 'register-student' | 'register-parent'>('login');
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showLoginPassword, setShowLoginPassword] = React.useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = React.useState(false);
   
   const { schools } = useFoodStore();
 
@@ -171,12 +173,15 @@ const LoginRegister = () => {
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Mật khẩu</label>
                   <div className="relative">
                     <input 
-                      type="password"
+                      type={showLoginPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
                       {...loginForm.register('password')} 
                       className="w-full pl-4 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:border-slate-200 outline-none transition-all"
                       placeholder="••••••••"
                     />
-                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <button type="button" aria-label={showLoginPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} onClick={() => setShowLoginPassword((visible) => !visible)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-200 hover:text-slate-700">
+                      {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
                 </div>
 
@@ -274,12 +279,15 @@ const LoginRegister = () => {
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Mật khẩu</label>
                   <div className="relative">
                     <input 
-                      type="password"
+                      type={showRegisterPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
                       {...mode === 'register-student' ? studentForm.register('password') : parentForm.register('password')} 
                       className="w-full pl-4 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 outline-none transition-all"
                       placeholder="••••••••"
                       />
-                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <button type="button" aria-label={showRegisterPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} onClick={() => setShowRegisterPassword((visible) => !visible)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-200 hover:text-slate-700">
+                      {showRegisterPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                     {mode === 'register-student' ? studentForm.formState.errors.password?.message : parentForm.formState.errors.password?.message}
                   </div>
                 </div>

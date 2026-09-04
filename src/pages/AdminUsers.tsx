@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react';
-import { Check, Link2, UserCheck, UserX } from 'lucide-react';
+import { Check, Link2, UserCheck, UserX, XCircle } from 'lucide-react';
 import { useFoodStore } from '../store/foodStore';
 import { cn } from '../utils/cn';
 
 const AdminUsers = () => {
   const { users, schools, updateUser } = useFoodStore();
-  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'STUDENT' | 'PARENT'>('PENDING');
+  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'REJECTED' | 'STUDENT' | 'PARENT'>('PENDING');
 
   const filtered = useMemo(() => {
     let list = users;
-    if (filter === 'PENDING') list = users.filter((u) => !u.isApproved && u.role !== 'ADMIN');
+    if (filter === 'PENDING') list = users.filter((u) => !u.isApproved && u.approvalStatus !== 'REJECTED' && u.role !== 'ADMIN');
+    if (filter === 'REJECTED') list = users.filter((u) => u.approvalStatus === 'REJECTED' && u.role !== 'ADMIN');
     if (filter === 'STUDENT') list = users.filter((u) => u.role === 'STUDENT');
     if (filter === 'PARENT') list = users.filter((u) => u.role === 'PARENT');
     return list;
@@ -21,7 +22,15 @@ const AdminUsers = () => {
     return school?.classes.find((c) => c.id === classId)?.name ?? '-';
   };
 
-  const toggleApprove = (id: string, approved: boolean) => updateUser(id, { isApproved: approved });
+  const setApproval = (id: string, approved: boolean) => {
+    if (approved) {
+      updateUser(id, { isApproved: true, approvalStatus: 'APPROVED', rejectionReason: undefined });
+      return;
+    }
+
+    const reason = window.prompt('Lý do không duyệt tài khoản (không bắt buộc):')?.trim() ?? '';
+    updateUser(id, { isApproved: false, approvalStatus: 'REJECTED', rejectionReason: reason || undefined });
+  };
 
   const linkStudent = (parentId: string) => {
     const student = window.prompt('Nhập ID học sinh muốn gán cho phụ huynh này (ví dụ u1):');
@@ -32,6 +41,7 @@ const AdminUsers = () => {
 
   const tabs = [
     { key: 'PENDING', label: 'Chờ duyệt' },
+    { key: 'REJECTED', label: 'Không duyệt' },
     { key: 'ALL', label: 'Tất cả' },
     { key: 'STUDENT', label: 'Học sinh' },
     { key: 'PARENT', label: 'Phụ huynh' },
@@ -84,20 +94,36 @@ const AdminUsers = () => {
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
-                {!user.isApproved && (
+                {!user.isApproved && user.approvalStatus !== 'REJECTED' && (
                   <button
-                    onClick={() => toggleApprove(user.id, true)}
+                    onClick={() => setApproval(user.id, true)}
                     className="flex items-center gap-1.5 rounded-xl bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700"
                   >
                     <UserCheck size={14} /> Duyệt
                   </button>
                 )}
-                {user.isApproved && (
+                {!user.isApproved && user.approvalStatus !== 'REJECTED' && (
                   <button
-                    onClick={() => toggleApprove(user.id, false)}
+                    onClick={() => setApproval(user.id, false)}
+                    className="flex items-center gap-1.5 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50"
+                  >
+                    <XCircle size={14} /> Không duyệt
+                  </button>
+                )}
+                {user.isApproved && user.role !== 'ADMIN' && (
+                  <button
+                    onClick={() => setApproval(user.id, false)}
                     className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
                   >
                     <UserX size={14} /> Hủy duyệt
+                  </button>
+                )}
+                {user.approvalStatus === 'REJECTED' && (
+                  <button
+                    onClick={() => setApproval(user.id, true)}
+                    className="flex items-center gap-1.5 rounded-xl bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700"
+                  >
+                    <UserCheck size={14} /> Duyệt lại
                   </button>
                 )}
                 {user.role === 'PARENT' && (
@@ -111,6 +137,11 @@ const AdminUsers = () => {
                 {user.isApproved ? (
                   <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-600">
                     <Check size={14} className="inline" /> Đã duyệt
+                  </span>
+                ) : user.approvalStatus === 'REJECTED' ? (
+                  <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-600">
+                    <XCircle size={14} className="inline" /> Không duyệt
+                    {user.rejectionReason && <span className="ml-1 font-normal">· {user.rejectionReason}</span>}
                   </span>
                 ) : (
                   <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-600">Chờ duyệt</span>
