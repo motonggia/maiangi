@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { useFoodStore } from '../store/foodStore';
 
-const dayNames = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6'];
+const dayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
 
 const AdminMenu = () => {
   const { menu, setMenu } = useFoodStore();
@@ -39,7 +39,7 @@ const AdminMenu = () => {
     <div className="mx-auto max-w-5xl p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-black uppercase tracking-wide text-slate-800">Quản lý menu</h1>
-        <p className="text-slate-500">Thực đơn cơm từ thứ 2 đến thứ 6, đồng giá 50.000 VNĐ.</p>
+        <p className="text-slate-500">Thực đơn cơm theo đủ 7 ngày trong tuần, đồng giá 50.000 VNĐ.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

@@ -15,6 +15,7 @@ import { format, addDays, parseISO } from 'date-fns';
 import { motion } from 'framer-motion';
 import { cn } from '../utils/cn';
 import ClassChat from '../components/ClassChat';
+import WeeklyMenuPreview from '../components/WeeklyMenuPreview';
 
 const StudentOrder = () => {
   const { user } = useAuthStore();
@@ -89,6 +90,8 @@ const StudentOrder = () => {
         </div>
       </div>
 
+      <WeeklyMenuPreview menu={menu} />
+
       {/* Warning & Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex gap-4 text-blue-800">
@@ -120,12 +123,12 @@ const StudentOrder = () => {
         {/* Menu Section */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-900 shadow-sm">
-                <Utensils size={16} strokeWidth={2.5} />
-              </div>
-              Thực Đơn Ngày Mai
-            </h2>
+              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-900 shadow-sm">
+                  <Utensils size={16} strokeWidth={2.5} />
+                </div>
+                Đặt món ngày mai
+              </h2>
             <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Chọn lượng cơm trước khi đặt</span>
           </div>
 
@@ -202,8 +205,8 @@ const StudentOrder = () => {
                 <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
                   <AlertCircle size={32} />
                 </div>
-                <p className="text-slate-500 font-medium">Ngày mai là cuối tuần, không có suất cơm.</p>
-                <p className="text-xs text-slate-400 mt-1">Trường học chỉ phục vụ bữa trưa từ thứ 2 đến thứ 6. Hẹn gặp lại!</p>
+                <p className="text-slate-500 font-medium">Chưa có món để đặt cho ngày mai.</p>
+                <p className="text-xs text-slate-400 mt-1">Lịch menu cả tuần, kể cả cuối tuần, vẫn được hiển thị ở phía trên.</p>
               </div>
             )}
           </div>

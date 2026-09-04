@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore';
 import { Order, useFoodStore } from '../store/foodStore';
 import { cn } from '../utils/cn';
 import ClassChat from '../components/ClassChat';
+import WeeklyMenuPreview from '../components/WeeklyMenuPreview';
 
 const ParentOrder = () => {
   const { user } = useAuthStore();
@@ -81,6 +82,8 @@ const ParentOrder = () => {
           <p className="text-sm">Tài khoản của bạn chưa được gán với học sinh. Liên hệ Admin để được cấu hình.</p>
         </div>
       )}
+
+      <WeeklyMenuPreview menu={menu} title="Thực đơn cả tuần cho con" />
 
       <div className="grid gap-4 md:grid-cols-2">
         {tomorrowMenu.map((item) => (
