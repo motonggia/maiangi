@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     q: 'Giá suất cơm là bao nhiêu?',
-    a: 'Suất cơm trưa đồng giá 50.000 VNĐ. Tiền ăn chính được thanh toán sau với Admin hoặc nhà trường, không thanh toán online.',
+    a: 'Suất cơm trưa đồng giá 50.000 VNĐ. Tiền ăn chính được thanh toán sau với nhà cung cấp, không thanh toán online.',
   },
   {
     q: 'Học sinh nghỉ ốm thì sao?',

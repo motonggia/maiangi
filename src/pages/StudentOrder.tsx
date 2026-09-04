@@ -280,7 +280,7 @@ const StudentOrder = () => {
               
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  <b>Thanh toán ăn chính:</b> Tiền ăn chính được thanh toán sau với Admin hoặc nhà trường. Đồ uống có 2 mức giá: 10.000 VNĐ và 20.000 VNĐ.
+                  <b>Thanh toán ăn chính:</b> Tiền ăn chính được thanh toán sau với nhà cung cấp. Đồ uống có 2 mức giá: 10.000 VNĐ và 20.000 VNĐ.
                 </p>
               </div>
             </div>
