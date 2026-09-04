@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore, UserRole } from '../store/authStore';
 import { useFoodStore } from '../store/foodStore';
+import { supabase, usernameEmail } from '../lib/supabase';
 import { BookOpen, User, Lock, Phone, School, GraduationCap, UserCheck, UserPlus, Eye, EyeOff } from 'lucide-react';
 import Logo from '../components/Logo';
 import { Link, useNavigate } from 'react-router-dom';
@@ -58,6 +59,46 @@ const LoginRegister = () => {
 
   const handleLogin = async (data: any) => {
     setIsLoading(true);
+    if (supabase) {
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: usernameEmail(data.username),
+        password: data.password,
+      });
+      if (error || !authData.user) {
+        alert('Tên đăng nhập hoặc mật khẩu không đúng.');
+        setIsLoading(false);
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase.from('profiles').select('*').eq('id', authData.user.id).single();
+      if (profileError || !profile) {
+        alert('Không tìm thấy hồ sơ tài khoản.');
+        setIsLoading(false);
+        return;
+      }
+      if (profile.role !== 'ADMIN' && profile.approval_status !== 'APPROVED') {
+        await supabase.auth.signOut();
+        alert(profile.approval_status === 'REJECTED' ? 'Tài khoản không được duyệt.' : 'Tài khoản đang chờ Admin duyệt.');
+        setIsLoading(false);
+        return;
+      }
+      login({
+        id: profile.id,
+        username: profile.username,
+        fullName: profile.full_name,
+        role: profile.role,
+        phone1: profile.phone1,
+        phone2: profile.phone2 ?? '',
+        schoolId: profile.school_id,
+        classId: profile.class_id,
+        isApproved: profile.approval_status === 'APPROVED',
+        studentId: profile.student_id ?? undefined,
+        parentId: profile.parent_id ?? undefined,
+      });
+      setIsLoading(false);
+      navigate('/');
+      return;
+    }
     // Mocking login logic
     setTimeout(() => {
       // Tài khoản demo để trải nghiệm nhanh: admin, student, parent.
@@ -121,6 +162,29 @@ const LoginRegister = () => {
 
   const handleRegister = async (data: any, role: UserRole) => {
     setIsLoading(true);
+    if (supabase) {
+      const { error } = await supabase.auth.signUp({
+        email: usernameEmail(data.username),
+        password: data.password,
+        options: {
+          data: {
+            username: data.username.trim(), full_name: data.fullName.trim(), role,
+            phone1: data.phone1, phone2: data.phone2, school_id: data.schoolId,
+            class_id: data.classId, child_name: data.childName?.trim(),
+          },
+        },
+      });
+      if (error) {
+        alert(error.message.includes('already registered') ? 'Tên đăng nhập đã tồn tại.' : `Đăng ký không thành công: ${error.message}`);
+        setIsLoading(false);
+        return;
+      }
+      const roleLabel = role === 'STUDENT' ? 'Học sinh' : 'Phụ huynh';
+      alert(`Đăng ký thành công với vai trò ${roleLabel}!\n\nTài khoản đang chờ Admin duyệt.`);
+      setIsLoading(false);
+      setMode('login');
+      return;
+    }
     setTimeout(() => {
       const username = data.username.trim();
       const isDuplicate = users.some((user) => user.username?.toLowerCase() === username.toLowerCase());
@@ -145,7 +209,8 @@ const LoginRegister = () => {
         ...(role === 'PARENT' ? { childName: data.childName.trim() } : {}),
       };
       addUser(newUser);
-      alert(`Đăng ký thành công với vai trò ${role}! \n\nTài khoản của bạn đang chờ Admin duyệt. Vui lòng quay lại sau khi được phê duyệt.`);
+      const roleLabel = role === 'STUDENT' ? 'Học sinh' : 'Phụ huynh';
+      alert(`Đăng ký thành công với vai trò ${roleLabel}! \n\nTài khoản của bạn đang chờ Admin duyệt. Vui lòng quay lại sau khi được phê duyệt.`);
       setIsLoading(false);
       setMode('login');
     }, 1500);

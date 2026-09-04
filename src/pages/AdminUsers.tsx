@@ -1,20 +1,63 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Check, Link2, UserCheck, UserX, XCircle } from 'lucide-react';
 import { useFoodStore } from '../store/foodStore';
+import { supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
 
 const AdminUsers = () => {
   const { users, schools, updateUser } = useFoodStore();
+  const [remoteUsers, setRemoteUsers] = useState<any[] | null>(null);
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'REJECTED' | 'STUDENT' | 'PARENT'>('PENDING');
 
+  const loadRemoteUsers = async () => {
+    if (!supabase) return;
+    const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+    if (error) {
+      alert(`Không tải được tài khoản online: ${error.message}`);
+      return;
+    }
+    setRemoteUsers((data ?? []).map((profile) => ({
+      ...profile,
+      fullName: profile.full_name,
+      schoolId: profile.school_id,
+      classId: profile.class_id,
+      studentId: profile.student_id,
+      parentId: profile.parent_id,
+      isApproved: profile.approval_status === 'APPROVED',
+      approvalStatus: profile.approval_status,
+      rejectionReason: profile.rejection_reason,
+    })));
+  };
+
+  useEffect(() => {
+    void loadRemoteUsers();
+  }, []);
+
+  useEffect(() => {
+    const refreshUsers = () => {
+      useFoodStore.persist.rehydrate();
+      void loadRemoteUsers();
+    };
+    window.addEventListener('storage', refreshUsers);
+    return () => window.removeEventListener('storage', refreshUsers);
+  }, []);
+
   const filtered = useMemo(() => {
-    let list = users;
-    if (filter === 'PENDING') list = users.filter((u) => !u.isApproved && u.approvalStatus !== 'REJECTED' && u.role !== 'ADMIN');
-    if (filter === 'REJECTED') list = users.filter((u) => u.approvalStatus === 'REJECTED' && u.role !== 'ADMIN');
-    if (filter === 'STUDENT') list = users.filter((u) => u.role === 'STUDENT');
-    if (filter === 'PARENT') list = users.filter((u) => u.role === 'PARENT');
+    const source = remoteUsers ?? users;
+    let list = source;
+    if (remoteUsers) {
+      if (filter === 'PENDING') list = source.filter((u) => u.approvalStatus === 'PENDING' && u.role !== 'ADMIN');
+      if (filter === 'REJECTED') list = source.filter((u) => u.approvalStatus === 'REJECTED' && u.role !== 'ADMIN');
+      if (filter === 'STUDENT') list = source.filter((u) => u.role === 'STUDENT');
+      if (filter === 'PARENT') list = source.filter((u) => u.role === 'PARENT');
+    } else {
+      if (filter === 'PENDING') list = source.filter((u) => !u.isApproved && u.approvalStatus !== 'REJECTED' && u.role !== 'ADMIN');
+      if (filter === 'REJECTED') list = source.filter((u) => u.approvalStatus === 'REJECTED' && u.role !== 'ADMIN');
+      if (filter === 'STUDENT') list = source.filter((u) => u.role === 'STUDENT');
+      if (filter === 'PARENT') list = source.filter((u) => u.role === 'PARENT');
+    }
     return list;
-  }, [users, filter]);
+  }, [users, remoteUsers, filter]);
 
   const getSchoolName = (schoolId: string) => schools.find((s) => s.id === schoolId)?.name ?? '-';
   const getClassName = (schoolId: string, classId: string) => {
@@ -23,6 +66,16 @@ const AdminUsers = () => {
   };
 
   const setApproval = (id: string, approved: boolean) => {
+    if (supabase) {
+      const update = approved
+        ? { approval_status: 'APPROVED', rejection_reason: null }
+        : { approval_status: 'REJECTED', rejection_reason: window.prompt('Lý do không duyệt tài khoản (không bắt buộc):')?.trim() || null };
+      void supabase.from('profiles').update(update).eq('id', id).then(({ error }) => {
+        if (error) alert(`Không cập nhật được: ${error.message}`);
+        else void loadRemoteUsers();
+      });
+      return;
+    }
     if (approved) {
       updateUser(id, { isApproved: true, approvalStatus: 'APPROVED', rejectionReason: undefined });
       return;
@@ -49,9 +102,18 @@ const AdminUsers = () => {
 
   return (
     <div className="mx-auto max-w-5xl p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-black uppercase tracking-wide text-slate-800">Quản lý tài khoản</h1>
-        <p className="text-slate-500">Duyệt đăng ký, gán học sinh – phụ huynh.</p>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-black uppercase tracking-wide text-slate-800">Quản lý tài khoản</h1>
+          <p className="text-slate-500">Duyệt đăng ký, gán học sinh – phụ huynh.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => useFoodStore.persist.rehydrate()}
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-700 transition hover:border-slate-900"
+        >
+          Làm mới danh sách
+        </button>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-2">
