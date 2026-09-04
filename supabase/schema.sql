@@ -73,3 +73,21 @@ with check (id = auth.uid() or public.is_admin());
 drop policy if exists "profiles_insert_self" on public.profiles;
 create policy "profiles_insert_self" on public.profiles for insert to authenticated
 with check (id = auth.uid());
+
+-- Chỉ Admin đã được duyệt mới có thể xóa tài khoản hoàn toàn khỏi Auth và profiles.
+create or replace function public.delete_user_account(target_user_id uuid)
+returns void language plpgsql security definer set search_path = public, auth
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Chỉ quản trị viên đã được duyệt mới có quyền xóa tài khoản';
+  end if;
+  if target_user_id = auth.uid() then
+    raise exception 'Không thể tự xóa tài khoản quản trị viên đang đăng nhập';
+  end if;
+  delete from auth.users where id = target_user_id;
+end;
+$$;
+
+revoke all on function public.delete_user_account(uuid) from public;
+grant execute on function public.delete_user_account(uuid) to authenticated;

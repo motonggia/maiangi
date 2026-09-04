@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Check, Link2, UserCheck, UserX, XCircle } from 'lucide-react';
+import { Check, Link2, Trash2, UserCheck, UserX, XCircle } from 'lucide-react';
 import { useFoodStore } from '../store/foodStore';
 import { supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
@@ -83,6 +83,24 @@ const AdminUsers = () => {
 
     const reason = window.prompt('Lý do không duyệt tài khoản (không bắt buộc):')?.trim() ?? '';
     updateUser(id, { isApproved: false, approvalStatus: 'REJECTED', rejectionReason: reason || undefined });
+  };
+
+  const deleteAccount = async (user: any) => {
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn XÓA tài khoản "${user.username ?? user.fullName}" không?\n\nTài khoản Auth và hồ sơ sẽ bị xóa vĩnh viễn.`,
+    );
+    if (!confirmed) return;
+    if (!supabase) {
+      alert('Chức năng xóa tài khoản online cần kết nối Supabase.');
+      return;
+    }
+    const { error } = await supabase.rpc('delete_user_account', { target_user_id: user.id });
+    if (error) {
+      alert(`Không xóa được tài khoản: ${error.message}`);
+      return;
+    }
+    alert('Đã xóa tài khoản thành công.');
+    await loadRemoteUsers();
   };
 
   const linkStudent = (parentId: string) => {
@@ -194,6 +212,15 @@ const AdminUsers = () => {
                     className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-900 hover:bg-slate-50"
                   >
                     <Link2 size={14} /> Gán HS
+                  </button>
+                )}
+                {user.role !== 'ADMIN' && (
+                  <button
+                    type="button"
+                    onClick={() => void deleteAccount(user)}
+                    className="flex items-center gap-1.5 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50"
+                  >
+                    <Trash2 size={14} /> Xóa
                   </button>
                 )}
                 {user.isApproved ? (
