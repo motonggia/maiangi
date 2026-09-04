@@ -1,5 +1,6 @@
 import { cn } from '../utils/cn';
-import logoUrl from '../assets/maiangi-online-slogan.svg';
+
+const logoUrl = '/assets/maiangi-online-slogan.svg';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
