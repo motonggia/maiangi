@@ -90,6 +90,7 @@ interface FoodStore {
   addVote: (vote: Vote) => void;
   addMessage: (message: ChatMessage) => void;
   addSpinResult: (spinResult: SpinResult) => void;
+  addUser: (user: any) => void;
   deleteOrder: (orderId: string) => void;
   updateUser: (userId: string, updates: any) => void;
 }
@@ -310,6 +311,7 @@ export const useFoodStore = create<FoodStore>()(
       addVote: (vote) => set((state) => ({ votes: [...state.votes, vote] })),
       addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
       addSpinResult: (spinResult) => set((state) => ({ spinResults: [...(state.spinResults ?? []), spinResult] })),
+      addUser: (user) => set((state) => ({ users: [...state.users, user] })),
       deleteOrder: (orderId) => set((state) => ({
         orders: state.orders.filter(o => o.id !== orderId)
       })),

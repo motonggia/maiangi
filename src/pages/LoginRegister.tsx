@@ -38,7 +38,7 @@ const LoginRegister = () => {
   const [showLoginPassword, setShowLoginPassword] = React.useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = React.useState(false);
   
-  const { schools, users, setUsers } = useFoodStore();
+  const { schools, users, addUser } = useFoodStore();
 
   const [selectedSchool, setSelectedSchool] = React.useState<string>('');
 
@@ -144,7 +144,7 @@ const LoginRegister = () => {
         approvalStatus: 'PENDING',
         ...(role === 'PARENT' ? { childName: data.childName.trim() } : {}),
       };
-      setUsers([...users, newUser]);
+      addUser(newUser);
       alert(`Đăng ký thành công với vai trò ${role}! \n\nTài khoản của bạn đang chờ Admin duyệt. Vui lòng quay lại sau khi được phê duyệt.`);
       setIsLoading(false);
       setMode('login');
