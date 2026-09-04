@@ -38,7 +38,7 @@ const LoginRegister = () => {
   const [showLoginPassword, setShowLoginPassword] = React.useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = React.useState(false);
   
-  const { schools } = useFoodStore();
+  const { schools, users, setUsers } = useFoodStore();
 
   const [selectedSchool, setSelectedSchool] = React.useState<string>('');
 
@@ -101,9 +101,16 @@ const LoginRegister = () => {
           studentId: 'u1',
         };
       } else {
-        alert('Thông tin đăng nhập không đúng. Tài khoản quản trị là motonggia với mật khẩu đã cấu hình trong hệ thống.');
-        setIsLoading(false);
-        return;
+        const registeredUser = users.find(
+          (user) => user.username?.toLowerCase() === data.username.trim().toLowerCase() && user.password === data.password,
+        );
+        if (registeredUser) {
+          mockUser = registeredUser;
+        } else {
+          alert('Thông tin đăng nhập không đúng. Tài khoản quản trị là motonggia với mật khẩu đã cấu hình trong hệ thống.');
+          setIsLoading(false);
+          return;
+        }
       }
       
       login(mockUser);
@@ -112,9 +119,32 @@ const LoginRegister = () => {
     }, 1000);
   };
 
-  const handleRegister = async (_data: any, role: UserRole) => {
+  const handleRegister = async (data: any, role: UserRole) => {
     setIsLoading(true);
     setTimeout(() => {
+      const username = data.username.trim();
+      const isDuplicate = users.some((user) => user.username?.toLowerCase() === username.toLowerCase());
+      if (isDuplicate) {
+        alert('Tên đăng nhập đã tồn tại. Vui lòng chọn tên khác.');
+        setIsLoading(false);
+        return;
+      }
+
+      const newUser = {
+        id: `registered-${Date.now()}`,
+        username,
+        password: data.password,
+        fullName: data.fullName.trim(),
+        role,
+        phone1: data.phone1,
+        phone2: data.phone2,
+        schoolId: data.schoolId,
+        classId: data.classId,
+        isApproved: false,
+        approvalStatus: 'PENDING',
+        ...(role === 'PARENT' ? { childName: data.childName.trim() } : {}),
+      };
+      setUsers([...users, newUser]);
       alert(`Đăng ký thành công với vai trò ${role}! \n\nTài khoản của bạn đang chờ Admin duyệt. Vui lòng quay lại sau khi được phê duyệt.`);
       setIsLoading(false);
       setMode('login');
