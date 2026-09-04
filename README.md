@@ -83,11 +83,16 @@ Dự án đã có sẵn workflow `.github/workflows/deploy.yml`. Cách dùng:
 ## 🔑 Cấu hình Telegram (Admin → Báo cáo Telegram)
 
 - Nhập **Bot Token** (tạo từ @BotFather) và **Chat ID**.
-- Bật **tự động gửi báo cáo ngày (sau 20h)** và **2 tuần**.
+- Bật hoặc tắt từng loại báo cáo: **ngày**, **tuần** và **2 tuần**.
+- Chọn giờ gửi. Mặc định: báo cáo ngày sau 20:00, báo cáo tuần vào Chủ nhật sau 20:00, báo cáo 2 tuần sau 20:00 vào ngày kết thúc kỳ.
+- Chọn **ngày bắt đầu chu kỳ 14 ngày**. Kỳ thanh toán gồm ngày bắt đầu và 13 ngày tiếp theo.
 - Xem trước nội dung và gửi thủ công để kiểm tra.
 
-> Lưu ý: để gửi tự động đúng 20h mà không cần bật website, cần một
-> cron/server chạy nền gọi Telegram API (xem `src/store/telegramStore.ts`).
+### Cách vận hành trên VPS
+
+Phương án hiện tại chạy ở trình duyệt. VPS cần duy trì Chrome/Chromium mở website, đăng nhập tài khoản quản trị và để trang hoạt động liên tục. Bộ gửi kiểm tra mỗi 60 giây, lưu nhật ký kỳ đã gửi trong trình duyệt và có thể gửi bù khi trang được mở lại sau giờ dự kiến.
+
+Nếu trình duyệt bị đóng, bị đăng xuất, mất dữ liệu localStorage hoặc VPS khởi động lại mà chưa mở lại trang, lần gửi tương ứng có thể bị bỏ lỡ. Bot Token hiện được lưu trong cấu hình trình duyệt; không dùng chung trình duyệt này cho người không được phép.
 
 ---
 

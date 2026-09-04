@@ -7,6 +7,9 @@ const yesterdayKey = toDateKey(new Date(Date.now() - 24 * 60 * 60 * 1000));
 const twoDaysAgoKey = toDateKey(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000));
 const tomorrowKey = toDateKey(new Date(Date.now() + 24 * 60 * 60 * 1000));
 
+export const SCHOOL_NAME = 'Trường THPT Chuyên Chu Văn An - Hà Nội';
+export const DEFAULT_CLASS_NAME = '10 Tin';
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -285,9 +288,9 @@ export const useFoodStore = create<FoodStore>()(
       schools: [
         { 
           id: 's1', 
-          name: 'Trường Tiểu Học Lê Quý Đôn', 
+          name: SCHOOL_NAME, 
           classes: [
-            { id: 'c1', name: '1A' }, { id: 'c2', name: '1B' }, { id: 'c3', name: '2A' } 
+            { id: 'c1', name: DEFAULT_CLASS_NAME }, { id: 'c2', name: '10 Anh' }, { id: 'c3', name: '10 Toán' } 
           ] 
         },
         { 
@@ -321,6 +324,22 @@ export const useFoodStore = create<FoodStore>()(
     }),
     {
       name: 'maiangi-online-data-v3',
+      merge: (persisted, current) => {
+        const persistedState = persisted as Partial<FoodStore>;
+        const savedSchools = persistedState.schools ?? current.schools;
+        const schools = savedSchools.map((school) => school.id === 's1'
+          ? {
+              ...school,
+              name: SCHOOL_NAME,
+              classes: school.classes.map((item) => item.id === 'c1' ? { ...item, name: DEFAULT_CLASS_NAME } : item),
+            }
+          : school);
+        return {
+          ...current,
+          ...persistedState,
+          schools,
+        };
+      },
     }
   )
 );

@@ -3,6 +3,12 @@ import { BarChart3, CalendarDays, FileText, Send, Settings2, TrendingUp } from '
 import { format } from 'date-fns';
 import { useFoodStore } from '../store/foodStore';
 import { sendTelegramMessage, useTelegramStore } from '../store/telegramStore';
+import {
+  buildPeriodReport,
+  defaultBiweeklyAnchor,
+  latestCompletedWeeklyPeriod,
+  manualBiweeklyPeriod,
+} from '../utils/telegramReports';
 
 const money = (value: number) => `${value.toLocaleString('vi-VN')} VNĐ`;
 
@@ -148,30 +154,19 @@ const AdminReports = () => {
     ].join('\n');
   }, [daily, selectedDate]);
 
+  const weeklyReportText = useMemo(() => {
+    const period = latestCompletedWeeklyPeriod(new Date(), config.weeklySendHour ?? 20) ?? {
+      start: selectedDate,
+      end: selectedDate,
+      key: `week:${selectedDate}:${selectedDate}`,
+    };
+    return buildPeriodReport({ orders, menu, users }, period, 'weekly');
+  }, [config.weeklySendHour, menu, orders, selectedDate, users]);
+
   const biweeklyReportText = useMemo(() => {
-    return [
-      '<b>📈 BÁO CÁO 2 TUẦN — maiangi.online</b>',
-      `📅 Tháng: <b>${selectedMonth}</b>`,
-      '',
-      '🍚 <b>SUẤT ĂN</b>',
-      `• Tổng suất cơm trong kỳ: <b>${monthly.activeOrders.length}</b>`,
-      `• Tiền cơm cần thu: <b>${monthly.foodTotal.toLocaleString('vi-VN')}đ</b>`,
-      '',
-      '🥤 <b>ĐỒ UỐNG</b>',
-      `• Tổng tiền đồ uống: <b>${monthly.drinkTotal.toLocaleString('vi-VN')}đ</b>`,
-      '',
-      '💰 <b>TỔNG THU</b>',
-      `• Tổng cộng: <b>${monthly.grandTotal.toLocaleString('vi-VN')}đ</b>`,
-      '',
-      '🏆 <b>TOP MÓN BÁN CHẠY</b>',
-      ...monthly.topMeals.map((m, i) => `${i + 1}. ${m.name}: ${m.count} suất`),
-      '',
-      '⚠️ <b>GHI CHÚ HỦY ĐƠN</b>',
-      ...(monthly.cancelledOrders.length
-        ? monthly.cancelledOrders.map((o) => `• ${o.cancelReason || 'không rõ'}`)
-        : ['• Không có']),
-    ].join('\n');
-  }, [monthly, selectedMonth]);
+    const period = manualBiweeklyPeriod(new Date());
+    return buildPeriodReport({ orders, menu, users }, period, 'biweekly');
+  }, [menu, orders, users]);
 
   const doSend = async (text: string) => {
     setSendState('sending');
@@ -363,7 +358,7 @@ const AdminReports = () => {
           Báo cáo tự động gửi Telegram
         </h2>
         <p className="mb-5 text-sm text-slate-500">
-          Gửi báo cáo ngày sau 20h và báo cáo 2 tuần. Nhập bot token & chat ID để kích hoạt.
+          Gửi báo cáo ngày, cuối tuần và cuối kỳ 2 tuần. Kỳ 2 tuần được dùng để đối soát và thanh toán một lần.
         </p>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -389,13 +384,48 @@ const AdminReports = () => {
             <div className="flex flex-wrap gap-4 pt-1">
               <label className="flex items-center gap-2 text-sm text-slate-600">
                 <input type="checkbox" checked={config.autoSendDaily} onChange={(e) => setConfig({ autoSendDaily: e.target.checked })} className="h-4 w-4 accent-slate-900" />
-                Tự động gửi báo cáo ngày (sau 20h)
+                Tự động gửi báo cáo ngày
+              </label>
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                <input type="checkbox" checked={config.autoSendWeekly} onChange={(e) => setConfig({ autoSendWeekly: e.target.checked })} className="h-4 w-4 accent-slate-900" />
+                Tự động gửi báo cáo tuần
               </label>
               <label className="flex items-center gap-2 text-sm text-slate-600">
                 <input type="checkbox" checked={config.autoSendBiweekly} onChange={(e) => setConfig({ autoSendBiweekly: e.target.checked })} className="h-4 w-4 accent-slate-900" />
                 Tự động gửi báo cáo 2 tuần
               </label>
             </div>
+
+            <div className="grid gap-3 pt-2 sm:grid-cols-3">
+              <label className="text-xs font-semibold text-slate-500">
+                Giờ gửi ngày
+                <select value={config.dailySendHour ?? 20} onChange={(e) => setConfig({ dailySendHour: Number(e.target.value) })} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                  {[18, 19, 20, 21, 22].map((hour) => <option key={hour} value={hour}>{String(hour).padStart(2, '0')}:00</option>)}
+                </select>
+              </label>
+              <label className="text-xs font-semibold text-slate-500">
+                Giờ gửi tuần
+                <select value={config.weeklySendHour ?? 20} onChange={(e) => setConfig({ weeklySendHour: Number(e.target.value) })} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                  {[18, 19, 20, 21, 22].map((hour) => <option key={hour} value={hour}>{String(hour).padStart(2, '0')}:00 Chủ nhật</option>)}
+                </select>
+              </label>
+              <label className="text-xs font-semibold text-slate-500">
+                Giờ gửi 2 tuần
+                <select value={config.biweeklySendHour ?? 20} onChange={(e) => setConfig({ biweeklySendHour: Number(e.target.value) })} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                  {[18, 19, 20, 21, 22].map((hour) => <option key={hour} value={hour}>{String(hour).padStart(2, '0')}:00 ngày kết thúc kỳ</option>)}
+                </select>
+              </label>
+            </div>
+            <label className="block pt-1 text-xs font-semibold text-slate-500">
+              Ngày bắt đầu chu kỳ 14 ngày
+              <input
+                type="date"
+                value={config.biweeklyAnchorDate || defaultBiweeklyAnchor(new Date())}
+                onChange={(e) => setConfig({ biweeklyAnchorDate: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-normal text-slate-700"
+              />
+              <span className="mt-1 block font-normal text-slate-400">Kỳ thanh toán gồm ngày bắt đầu và 13 ngày tiếp theo.</span>
+            </label>
 
             <div className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
               <p className="font-bold text-slate-900">Trạng thái tự động</p>
@@ -405,9 +435,14 @@ const AdminReports = () => {
 
           <div className="rounded-2xl bg-slate-50 p-3">
             <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase text-slate-500">
-              <Settings2 size={14} /> Xem trước nội dung (HTML)
+              <Settings2 size={14} /> Xem trước nội dung Telegram
             </p>
-            <pre className="max-h-56 overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-slate-600">{dailyReportText}</pre>
+            <p className="mb-1 text-[11px] font-bold text-slate-500">Báo cáo ngày</p>
+            <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-slate-600">{dailyReportText}</pre>
+            <p className="mb-1 mt-3 text-[11px] font-bold text-slate-500">Báo cáo tuần</p>
+            <pre className="max-h-32 overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-slate-600">{weeklyReportText}</pre>
+            <p className="mb-1 mt-3 text-[11px] font-bold text-slate-500">Báo cáo 2 tuần / thanh toán</p>
+            <pre className="max-h-32 overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-slate-600">{biweeklyReportText}</pre>
           </div>
         </div>
 
@@ -420,9 +455,16 @@ const AdminReports = () => {
             <Send size={15} /> Gửi báo cáo ngày
           </button>
           <button
-            onClick={() => doSend(biweeklyReportText)}
+            onClick={() => doSend(weeklyReportText)}
             disabled={sendState === 'sending'}
             className="flex items-center gap-2 rounded-xl bg-slate-800 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-900 disabled:bg-slate-300"
+          >
+            <Send size={15} /> Gửi báo cáo tuần
+          </button>
+          <button
+            onClick={() => doSend(biweeklyReportText)}
+            disabled={sendState === 'sending'}
+            className="flex items-center gap-2 rounded-xl bg-slate-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-900 disabled:bg-slate-300"
           >
             <Send size={15} /> Gửi báo cáo 2 tuần
           </button>
