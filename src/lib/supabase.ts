@@ -8,4 +8,6 @@ const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.met
 export const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 // Supabase Auth cần email; username được ánh xạ thành email nội bộ để giữ form hiện tại.
-export const usernameEmail = (username: string) => `${username.trim().toLowerCase()}@maiangi.local`;
+// Supabase yêu cầu email có domain hợp lệ; dùng domain website cho tài khoản nội bộ.
+// Admin hiện tại đã tạo bằng @maiangi.local nên được xử lý riêng trong LoginRegister.
+export const usernameEmail = (username: string) => `${username.trim().toLowerCase()}@maiangi.online`;

@@ -60,8 +60,11 @@ const LoginRegister = () => {
   const handleLogin = async (data: any) => {
     setIsLoading(true);
     if (supabase) {
+      const loginEmail = data.username.trim().toLowerCase() === 'motonggia'
+        ? 'motonggia@maiangi.local'
+        : usernameEmail(data.username);
       const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: usernameEmail(data.username),
+        email: loginEmail,
         password: data.password,
       });
       if (error || !authData.user) {
