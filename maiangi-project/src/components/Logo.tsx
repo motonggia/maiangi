@@ -1,4 +1,5 @@
 import { cn } from '../utils/cn';
+import logoUrl from '../assets/maiangi-online-slogan.svg';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -13,7 +14,7 @@ const sizes = {
 
 const Logo = ({ size = 'md', className }: LogoProps) => (
   <img
-    src="/maiangi.online.svg"
+    src={logoUrl}
     alt="maiangi.online"
     className={cn('block shrink-0 object-contain object-left', sizes[size], className)}
   />
@@ -21,7 +22,7 @@ const Logo = ({ size = 'md', className }: LogoProps) => (
 
 export const LogoMark = ({ size = 'md', className }: LogoProps) => (
   <img
-    src="/maiangi.online.svg"
+    src={logoUrl}
     alt="maiangi.online"
     className={cn('block shrink-0 object-contain object-left', sizes[size], className)}
   />
