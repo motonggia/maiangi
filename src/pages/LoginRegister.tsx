@@ -60,10 +60,10 @@ const LoginRegister = () => {
     setTimeout(() => {
       // Tài khoản demo để trải nghiệm nhanh: admin, student, parent.
       let mockUser: any;
-      if (data.username === 'admin') {
+      if (data.username === 'motonggia' && data.password === 'm0thaibA123') {
         mockUser = {
           id: 'u0',
-          username: 'admin',
+          username: 'motonggia',
           fullName: 'Quản Trị Viên',
           role: 'ADMIN',
           phone1: '0123456789',
@@ -99,7 +99,7 @@ const LoginRegister = () => {
           studentId: 'u1',
         };
       } else {
-        alert('Tài khoản demo chưa được tìm thấy. Hãy dùng: admin, student hoặc parent.');
+        alert('Thông tin đăng nhập không đúng. Tài khoản quản trị là motonggia với mật khẩu đã cấu hình trong hệ thống.');
         setIsLoading(false);
         return;
       }
