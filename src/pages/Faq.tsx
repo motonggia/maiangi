@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     q: 'Giá suất cơm là bao nhiêu?',
-    a: 'Suất cơm trưa đồng giá 50.000 VNĐ. Tiền ăn chính được thanh toán sau với nhà cung cấp, không thanh toán online.',
+    a: 'Thanh toán:\n\n- Đồ ăn chính học sinh không phải thanh toán.\n- Đồ uống phụ học sinh thanh toán online. Mức giá: 10.000 VNĐ và 20.000 VNĐ',
   },
   {
     q: 'Học sinh nghỉ ốm thì sao?',
@@ -60,7 +60,7 @@ const FaqItem = ({ q, a, open, onToggle }: { q: string; a: string; open: boolean
         />
       </button>
       {open && (
-        <div className="border-t border-slate-100 px-4 py-4 text-sm leading-relaxed text-slate-600">{a}</div>
+        <div className="whitespace-pre-line border-t border-slate-100 px-4 py-4 text-sm leading-relaxed text-slate-600">{a}</div>
       )}
     </div>
   );
