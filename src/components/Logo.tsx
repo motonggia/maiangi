@@ -1,6 +1,10 @@
 import { cn } from '../utils/cn';
 
-const logoUrl = '/assets/maiangi-online-slogan.svg';
+const logoUrls = {
+  header: '/assets/maiangi-logo-header.png',
+  large: '/assets/maiangi-logo-large.png',
+  mark: '/assets/maiangi-mark-S12.png',
+};
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -15,17 +19,17 @@ const sizes = {
 
 const Logo = ({ size = 'md', className }: LogoProps) => (
   <img
-    src={logoUrl}
+    src={size === 'lg' ? logoUrls.large : logoUrls.header}
     alt="maiangi.online"
     className={cn('block shrink-0 object-contain object-left', sizes[size], className)}
   />
 );
 
-export const LogoMark = ({ size = 'md', className }: LogoProps) => (
+export const LogoMark = ({ className }: LogoProps) => (
   <img
-    src={logoUrl}
+    src={logoUrls.mark}
     alt="maiangi.online"
-    className={cn('block shrink-0 object-contain object-left', sizes[size], className)}
+    className={cn('block h-10 w-10 shrink-0 object-contain', className)}
   />
 );
 
