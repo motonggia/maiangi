@@ -1,0 +1,23 @@
+CAP NHAT LOGO MAIANGI.ONLINE
+
+1. Dat 3 file logo giao dien vao:
+   public/assets/maiangi-logo-header.png
+   public/assets/maiangi-logo-large.png
+   public/assets/maiangi-mark-S12.png
+
+2. Dat anh xem truoc Zalo vao:
+   public/og-image.png
+
+3. Code src/components/Logo.tsx da duoc cap nhat de dung:
+   - header: /assets/maiangi-logo-header.png
+   - logo lon: /assets/maiangi-logo-large.png
+   - mark: /assets/maiangi-mark-S12.png
+
+4. index.html da dung /og-image.png cho Open Graph.
+
+5. Sau khi copy vao repository GitHub:
+   git add .
+   git commit -m "Update logo assets"
+   git push origin main
+
+Vercel se tu dong build lai ban Production.
