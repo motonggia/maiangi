@@ -138,7 +138,10 @@ const AdminUsers = () => {
         </div>
         <button
           type="button"
-          onClick={() => useFoodStore.persist.rehydrate()}
+          onClick={() => {
+            useFoodStore.persist.rehydrate();
+            void loadRemoteUsers();
+          }}
           className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-700 transition hover:border-slate-900"
         >
           Làm mới danh sách
@@ -181,7 +184,9 @@ const AdminUsers = () => {
                     {user.role === 'STUDENT' ? 'Học sinh' : 'Phụ huynh'} · {getClassName(user.schoolId, user.classId)} · {getSchoolName(user.schoolId)}
                   </p>
                   {user.studentId && <p className="text-xs text-slate-400">Gắn với HS: {user.studentId}</p>}
-                  <p className="text-xs text-slate-400">Đăng ký: {formatRegistrationDate(user.createdAt ?? user.created_at)}</p>
+                  <p className="mt-1 inline-flex rounded-lg bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-600">
+                    Ngày đăng ký: {formatRegistrationDate(user.createdAt ?? user.created_at)}
+                  </p>
                 </div>
               </div>
 
